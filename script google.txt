@@ -1,0 +1,313 @@
+const SPREADSHEET_ID = '1u8fyW4cs8RC3cYNEXU7pCWesC1mAeoTRHMOeswF-tgs';
+
+function doGet(e) {
+  const action = e.parameter.action;
+  
+  if (action === 'getProductos') {
+    return getProductos();
+  }
+  
+  if (action === 'getSolicitudes') {
+    return getSolicitudes(e.parameter.userEmail, e.parameter.limit);
+  }
+
+  if (action === 'getUsuariosDisponibles') {
+    return getUsuariosDisponibles();
+  }
+  
+  if (action === 'getDisponibilidad') {
+    return getDisponibilidad();
+  }
+
+  if (action === 'login') {
+    return handleLogin(e.parameter.email, e.parameter.password);
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Acción no válida' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  const action = e.parameter.action;
+  
+  if (action === 'addSolicitud') {
+    return addSolicitud(JSON.parse(e.parameter.data));
+  }
+
+  if (action === 'updateSolicitud') {
+    return updateSolicitud(JSON.parse(e.parameter.data));
+  }
+
+  if (action === 'finalizeSolicitud') {
+    const data = JSON.parse(e.parameter.data);
+    return finalizeSolicitud(data.solicitudId, data.responsable);
+  }
+
+  if (action === 'setDisponibilidad') {
+    const data = JSON.parse(e.parameter.data);
+    return setDisponibilidad(data.userId, data.unavailableDates);
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Acción no válida' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function handleLogin(email, password) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName('USUARIOS');
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift();
+  
+  const emailIndex = headers.indexOf('correo');
+  const passwordIndex = headers.indexOf('Cotraseña');
+  
+  if (emailIndex === -1 || passwordIndex === -1) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Error: Columnas de correo o contraseña no encontradas.' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  const user = data.find(row => row[emailIndex] === email && row[passwordIndex] === password);
+  
+  if (user) {
+    const userObject = {
+      id: user[headers.indexOf('ID')],
+      nombre: user[headers.indexOf('Nombre')],
+      correo: user[headers.indexOf('correo')],
+      nivel: user[headers.indexOf('Nivel')]
+    };
+    return ContentService.createTextOutput(JSON.stringify({ success: true, data: userObject }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } else {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Credenciales inválidas.' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function getSolicitudes(userEmail, limit) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName('SOLICITUDES');
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift();
+  const solicitudes = data.map(row => {
+    const rowObject = {};
+    headers.forEach((header, index) => {
+      rowObject[header] = row[index];
+    });
+    return rowObject;
+  });
+
+  let filteredSolicitudes = solicitudes;
+  
+  if (userEmail && userEmail !== 'admin') {
+    filteredSolicitudes = solicitudes.filter(sol => sol.Email === userEmail);
+  }
+  
+  filteredSolicitudes.sort((a, b) => {
+    const idA = a.ID ? parseInt(a.ID.split('-')[1]) : 0;
+    const idB = b.ID ? parseInt(b.ID.split('-')[1]) : 0;
+    return idB - idA;
+  });
+
+  if (limit) {
+    const numLimit = parseInt(limit, 10);
+    if (!isNaN(numLimit) && numLimit > 0) {
+      filteredSolicitudes = filteredSolicitudes.slice(0, numLimit);
+    }
+  }
+
+  return ContentService.createTextOutput(JSON.stringify({ success: true, data: filteredSolicitudes }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function getProductos() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName('PRODUCTOS');
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift();
+  const productos = data.map(row => {
+    const rowObject = {};
+    headers.forEach((header, index) => {
+      rowObject[header] = row[index];
+    });
+    return rowObject;
+  });
+  
+  return ContentService.createTextOutput(JSON.stringify({ success: true, data: productos }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function getUsuariosDisponibles() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName('USUARIOS');
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift();
+  const usuarios = data.map(row => {
+    const rowObject = {};
+    headers.forEach((header, index) => {
+      rowObject[header] = row[index];
+    });
+    return rowObject;
+  });
+  const usuariosDisponibles = usuarios.filter(user => user.Nombre === 'Hector Dominguez' || user.Nombre === 'Ruben Dominguez');
+  return ContentService.createTextOutput(JSON.stringify({ success: true, data: usuariosDisponibles })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function getDisponibilidad() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName('Disponibilidad');
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift();
+  const disponibilidad = {};
+  data.forEach(row => {
+    const usuarioID = row[headers.indexOf('UsuarioID')];
+    const fecha = Utilities.formatDate(new Date(row[headers.indexOf('Fecha')]), "GMT-6", "yyyy-MM-dd");
+    if (!disponibilidad[usuarioID]) {
+      disponibilidad[usuarioID] = [];
+    }
+    disponibilidad[usuarioID].push(fecha);
+  });
+  return ContentService.createTextOutput(JSON.stringify({ success: true, data: disponibilidad })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function setDisponibilidad(userId, unavailableDates) {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName('Disponibilidad');
+    // Clear existing data for the user
+    const data = sheet.getDataRange().getValues();
+    const headers = data.shift();
+    const userIdIndex = headers.indexOf('UsuarioID');
+    const rowsToDelete = [];
+    for (let i = data.length - 1; i >= 0; i--) {
+      if (data[i][userIdIndex] === userId) {
+        rowsToDelete.push(i + 2); // +2 because of header row and 0-based index
+      }
+    }
+    rowsToDelete.forEach(rowNum => sheet.deleteRow(rowNum));
+
+    // Append new data
+    const newRows = unavailableDates.map(date => [userId, date]);
+    if (newRows.length > 0) {
+      sheet.getRange(sheet.getLastRow() + 1, 1, newRows.length, newRows[0].length).setValues(newRows);
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({ success: true, message: 'Disponibilidad guardada con éxito.' })).setMimeType(ContentService.MimeType.JSON);
+  } catch (e) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: e.message })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function addSolicitud(data) {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName('SOLICITUDES');
+    const lastRow = sheet.getLastRow();
+    const nextId = 'SOL-' + Utilities.formatString('%03d', lastRow);
+    const newRow = [
+      nextId,
+      data.date,
+      data.user,
+      data.email,
+      data.location,
+      data.type,
+      data.comments,
+      JSON.stringify(data.products),
+      true,
+      ''
+    ];
+    sheet.appendRow(newRow);
+    return ContentService.createTextOutput(JSON.stringify({ success: true, message: 'Solicitud agregada con éxito' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (e) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: e.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function updateSolicitud(data) {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName('SOLICITUDES');
+    const sheetData = sheet.getDataRange().getValues();
+    const headers = sheetData.shift();
+    
+    const idIndex = headers.indexOf('ID');
+    const fechaIndex = headers.indexOf('Fecha');
+    const tipoIndex = headers.indexOf('Tipo');
+    const ubicacionIndex = headers.indexOf('Ubicacion');
+    const comentariosIndex = headers.indexOf('Comentarios');
+    const productosIndex = headers.indexOf('Productos');
+    const activaIndex = headers.indexOf('Activa');
+    
+    if (idIndex === -1 || fechaIndex === -1 || tipoIndex === -1 || ubicacionIndex === -1 || productosIndex === -1 || activaIndex === -1) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Columnas requeridas no encontradas en la hoja.' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    let rowIndex = -1;
+    for (let i = 0; i < sheetData.length; i++) {
+      if (sheetData[i][idIndex] === data.solicitudId) {
+        rowIndex = i + 2; // +2 porque eliminamos headers y las filas empiezan en 1
+        break;
+      }
+    }
+    
+    if (rowIndex === -1) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Solicitud no encontrada.' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Verificar que la solicitud esté activa
+    if (sheetData[rowIndex - 2][activaIndex] !== true) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'No se puede editar una solicitud finalizada.' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Actualizar los campos
+    sheet.getRange(rowIndex, fechaIndex + 1).setValue(data.date);
+    sheet.getRange(rowIndex, tipoIndex + 1).setValue(data.type);
+    sheet.getRange(rowIndex, ubicacionIndex + 1).setValue(data.location);
+    sheet.getRange(rowIndex, comentariosIndex + 1).setValue(data.comments);
+    sheet.getRange(rowIndex, productosIndex + 1).setValue(JSON.stringify(data.products));
+    
+    return ContentService.createTextOutput(JSON.stringify({ success: true, message: 'Solicitud actualizada con éxito.' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (e) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: e.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function finalizeSolicitud(solicitudId, responsable) {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName('SOLICITUDES');
+    const data = sheet.getDataRange().getValues();
+    const headers = data.shift();
+    const idIndex = headers.indexOf('ID');
+    const activeIndex = headers.indexOf('Activa');
+    const responsableIndex = headers.indexOf('Responsable');
+
+    if (idIndex === -1 || activeIndex === -1 || responsableIndex === -1) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Columnas ID, Activa o Responsable no encontradas.' })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    let rowIndex = -1;
+    for (let i = 0; i < data.length; i++) {
+      if (data[i][idIndex] === solicitudId) {
+        rowIndex = i + 2; 
+        break;
+      }
+    }
+
+    if (rowIndex !== -1) {
+      sheet.getRange(rowIndex, activeIndex + 1).setValue(false);
+      sheet.getRange(rowIndex, responsableIndex + 1).setValue(responsable);
+      return ContentService.createTextOutput(JSON.stringify({ success: true, message: 'Solicitud finalizada con éxito.' })).setMimeType(ContentService.MimeType.JSON);
+    } else {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Solicitud no encontrada.' })).setMimeType(ContentService.MimeType.JSON);
+    }
+  } catch (e) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: e.message })).setMimeType(ContentService.MimeType.JSON);
+  }
+}

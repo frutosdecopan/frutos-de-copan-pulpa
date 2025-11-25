@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generar Iconos Básicos</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 50px;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 20px;
+        }
+        button:hover {
+            transform: scale(1.05);
+            transition: all 0.3s;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍓 Generar Iconos Básicos</h1>
+        <p>Frutos de Copán - Sistema PULPA</p>
+        
+        <div class="status" id="status">
+            Haz clic en el botón para generar los iconos básicos
+        </div>
+        
+        <button onclick="generateIcons()">🚀 Generar y Guardar Iconos</button>
+        
+        <div id="preview" style="margin-top: 30px; display: none;">
+            <h3>Vista Previa:</h3>
+            <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                <div>
+                    <canvas id="canvas192" width="192" height="192"></canvas>
+                    <p>192x192px</p>
+                </div>
+                <div>
+                    <canvas id="canvas72" width="72" height="72"></canvas>
+                    <p>72x72px</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function generateIcons() {
+            const status = document.getElementById('status');
+            status.innerHTML = '⏳ Generando iconos...';
+            
+            // Generar icono 192x192
+            const canvas192 = document.getElementById('canvas192');
+            const ctx192 = canvas192.getContext('2d');
+            
+            // Gradiente púrpura
+            const gradient192 = ctx192.createLinearGradient(0, 0, 192, 192);
+            gradient192.addColorStop(0, '#667eea');
+            gradient192.addColorStop(1, '#764ba2');
+            ctx192.fillStyle = gradient192;
+            ctx192.fillRect(0, 0, 192, 192);
+            
+            // Texto FDC
+            ctx192.fillStyle = 'white';
+            ctx192.font = 'bold 60px Arial';
+            ctx192.textAlign = 'center';
+            ctx192.textBaseline = 'middle';
+            ctx192.fillText('FDC', 96, 96);
+            
+            // Hoja
+            ctx192.font = '40px Arial';
+            ctx192.fillText('🌿', 96, 50);
+            
+            // Generar icono 72x72
+            const canvas72 = document.getElementById('canvas72');
+            const ctx72 = canvas72.getContext('2d');
+            
+            // Gradiente púrpura
+            const gradient72 = ctx72.createLinearGradient(0, 0, 72, 72);
+            gradient72.addColorStop(0, '#667eea');
+            gradient72.addColorStop(1, '#764ba2');
+            ctx72.fillStyle = gradient72;
+            ctx72.fillRect(0, 0, 72, 72);
+            
+            // Texto FDC
+            ctx72.fillStyle = 'white';
+            ctx72.font = 'bold 25px Arial';
+            ctx72.textAlign = 'center';
+            ctx72.textBaseline = 'middle';
+            ctx72.fillText('FDC', 36, 36);
+            
+            // Mostrar vista previa
+            document.getElementById('preview').style.display = 'block';
+            
+            // Descargar iconos
+            setTimeout(() => {
+                // Descargar icono 192x192
+                const link192 = document.createElement('a');
+                link192.download = 'icon-192x192.png';
+                link192.href = canvas192.toDataURL('image/png');
+                link192.click();
+                
+                status.innerHTML = '✅ Icono 192x192 generado y descargado';
+                
+                setTimeout(() => {
+                    // Descargar icono 72x72
+                    const link72 = document.createElement('a');
+                    link72.download = 'icon-72x72.png';
+                    link72.href = canvas72.toDataURL('image/png');
+                    link72.click();
+                    
+                    status.innerHTML = '✅ ¡Todos los iconos generados y descargados!<br>Copia los archivos a la carpeta /icons/';
+                }, 1000);
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

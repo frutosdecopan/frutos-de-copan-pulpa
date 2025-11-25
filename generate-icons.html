@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Iconos PWA - Frutos de Copán</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .instructions {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .instructions h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .canvas-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .icon-preview {
+            text-align: center;
+        }
+        
+        .icon-preview canvas {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            width: 100%;
+            height: auto;
+        }
+        
+        .icon-preview p {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+            font-weight: bold;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .download-all {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+        
+        .download-all:hover {
+            transform: translateY(-2px);
+        }
+        
+        .logo-upload {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .logo-upload input {
+            display: none;
+        }
+        
+        .logo-upload label {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .logo-upload label:hover {
+            transform: translateY(-2px);
+        }
+        
+        #preview {
+            max-width: 200px;
+            margin: 20px auto;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍓 Generador de Iconos PWA</h1>
+        <p class="subtitle">Frutos de Copán - Sistema PULPA</p>
+        
+        <div class="instructions">
+            <h3>📝 Instrucciones:</h3>
+            <ol>
+                <li><strong>Sube el logo de Frutos de Copán</strong> (formato PNG con fondo transparente recomendado)</li>
+                <li>Los iconos se generarán automáticamente en todos los tamaños necesarios</li>
+                <li>Descarga cada icono individualmente o todos a la vez</li>
+                <li>Coloca los archivos en la carpeta <code>/icons</code> de tu proyecto</li>
+                <li>Los iconos están optimizados para PWA (Progressive Web App)</li>
+            </ol>
+        </div>
+        
+        <div class="logo-upload">
+            <input type="file" id="logoInput" accept="image/*">
+            <label for="logoInput">📁 Seleccionar Logo de Frutos de Copán</label>
+            <img id="preview" alt="Preview">
+        </div>
+        
+        <div class="canvas-container" id="canvasContainer"></div>
+        
+        <button class="download-all" id="downloadAll" style="display: none;">
+            ⬇️ Descargar Todos los Iconos
+        </button>
+    </div>
+
+    <script>
+        // Tamaños requeridos para PWA de Frutos de Copán
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        const canvasContainer = document.getElementById('canvasContainer');
+        const logoInput = document.getElementById('logoInput');
+        const preview = document.getElementById('preview');
+        const downloadAllBtn = document.getElementById('downloadAll');
+        
+        let logoImage = null;
+        
+        // Verificar si hay un logo ya cargado (desde uploads)
+        window.addEventListener('load', function() {
+            // Si el usuario ya subió un logo, intentar usarlo
+            const savedLogo = localStorage.getItem('fdcLogo');
+            if (savedLogo) {
+                logoImage = new Image();
+                logoImage.onload = function() {
+                    preview.src = savedLogo;
+                    preview.style.display = 'block';
+                    generateIcons();
+                };
+                logoImage.src = savedLogo;
+            }
+        });
+        
+        logoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    logoImage = new Image();
+                    logoImage.onload = function() {
+                        preview.src = event.target.result;
+                        preview.style.display = 'block';
+                        // Guardar logo en localStorage para futuras sesiones
+                        localStorage.setItem('fdcLogo', event.target.result);
+                        generateIcons();
+                    };
+                    logoImage.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        function generateIcons() {
+            canvasContainer.innerHTML = '';
+            
+            // Crear contenedor para mensaje de progreso
+            const progressContainer = document.createElement('div');
+            progressContainer.className = 'progress-info';
+            progressContainer.innerHTML = '<p>Generando iconos... <span id="progressCount">0</span>/' + sizes.length + '</p>';
+            canvasContainer.appendChild(progressContainer);
+            
+            let generatedCount = 0;
+            const progressCount = document.getElementById('progressCount');
+            
+            sizes.forEach((size, index) => {
+                // Generar cada icono con un pequeño delay para mejor UX
+                setTimeout(() => {
+                    const iconDiv = document.createElement('div');
+                    iconDiv.className = 'icon-preview';
+                    
+                    const canvas = document.createElement('canvas');
+                    canvas.width = size;
+                    canvas.height = size;
+                    canvas.id = 'canvas-' + size;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Fondo con gradiente púrpura (colores de marca)
+                    const gradient = ctx.createLinearGradient(0, 0, size, size);
+                    gradient.addColorStop(0, '#667eea');
+                    gradient.addColorStop(1, '#764ba2');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, size, size);
+                    
+                    // Dibujar logo centrado (ajustar tamaño para que no toque los bordes)
+                    if (logoImage) {
+                        const logoSize = size * 0.7;
+                        const x = (size - logoSize) / 2;
+                        const y = (size - logoSize) / 2;
+                        
+                        // Crear máscara circular para mejor presentación
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(size/2, size/2, logoSize/2, 0, Math.PI * 2);
+                        ctx.closePath();
+                        ctx.clip();
+                        
+                        ctx.drawImage(logoImage, x, y, logoSize, logoSize);
+                        ctx.restore();
+                    } else {
+                        // Si no hay logo, mostrar texto FDC
+                        ctx.fillStyle = 'white';
+                        ctx.font = `bold ${size * 0.3}px Arial`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('FDC', size/2, size/2);
+                    }
+                    
+                    const label = document.createElement('p');
+                    label.textContent = `${size}x${size}px`;
+                    
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.className = 'download-btn';
+                    downloadBtn.textContent = `⬇️ Descargar`;
+                    downloadBtn.onclick = () => downloadIcon(canvas, size);
+                    
+                    iconDiv.appendChild(canvas);
+                    iconDiv.appendChild(label);
+                    iconDiv.appendChild(downloadBtn);
+                    
+                    // Reemplazar el contenedor de progreso con el primer icono
+                    if (index === 0) {
+                        canvasContainer.replaceChild(iconDiv, progressContainer);
+                    } else {
+                        canvasContainer.appendChild(iconDiv);
+                    }
+                    
+                    // Actualizar contador de progreso
+                    generatedCount++;
+                    if (progressCount) {
+                        progressCount.textContent = generatedCount;
+                    }
+                    
+                    // Mostrar botón de descarga masiva cuando todos estén listos
+                    if (generatedCount === sizes.length) {
+                        downloadAllBtn.style.display = 'block';
+                    }
+                }, index * 100); // Pequeño delay para mejor experiencia
+            });
+        }
+        
+        function downloadIcon(canvas, size) {
+            const link = document.createElement('a');
+            link.download = `icon-${size}x${size}.png`;
+            link.href = canvas.toDataURL('image/png', 0.95); // Alta calidad
+            link.click();
+            
+            // Feedback visual
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✅ Descargado';
+            btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            }, 1500);
+        }
+        
+        downloadAllBtn.addEventListener('click', function() {
+            const canvases = document.querySelectorAll('canvas');
+            let downloaded = 0;
+            const total = canvases.length;
+            
+            // Actualizar texto del botón
+            downloadAllBtn.textContent = `⏳ Descargando... ${downloaded}/${total}`;
+            
+            canvases.forEach((canvas, index) => {
+                setTimeout(() => {
+                    const sizeMatch = canvas.id.match(/canvas-(\d+)/);
+                    const size = sizeMatch ? sizeMatch[1] : 'unknown';
+                    downloadIcon(canvas, size);
+                    
+                    downloaded++;
+                    downloadAllBtn.textContent = `⏳ Descargando... ${downloaded}/${total}`;
+                    
+                    if (downloaded === total) {
+                        downloadAllBtn.textContent = '✅ ¡Todos Descargados!';
+                        setTimeout(() => {
+                            downloadAllBtn.textContent = '⬇️ Descargar Todos los Iconos';
+                        }, 3000);
+                    }
+                }, index * 300);
+            });
+        });
+        
+        // Función para limpiar el almacenamiento
+        function clearLogo() {
+            localStorage.removeItem('fdcLogo');
+            location.reload();
+        }
+        
+        // Generar iconos de shortcuts también
+        function generateShortcutIcons() {
+            const shortcuts = [
+                { name: 'new', icon: '➕', color: '#10b981' },
+                { name: 'dashboard', icon: '📊', color: '#667eea' },
+                { name: 'reports', icon: '📄', color: '#f59e0b' }
+            ];
+            
+            shortcuts.forEach(shortcut => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 96;
+                canvas.height = 96;
+                const ctx = canvas.getContext('2d');
+                
+                // Fondo
+                ctx.fillStyle = shortcut.color;
+                ctx.fillRect(0, 0, 96, 96);
+                
+                // Icono
+                ctx.font = '48px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = 'white';
+                ctx.fillText(shortcut.icon, 48, 48);
+                
+                setTimeout(() => {
+                    const link = document.createElement('a');
+                    link.download = `shortcut-${shortcut.name}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                }, 0);
+            });
+        }
+        
+        // Badge icon
+        function generateBadgeIcon() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 72;
+            canvas.height = 72;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.fillStyle = '#667eea';
+            ctx.beginPath();
+            ctx.arc(36, 36, 36, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            if (logoImage) {
+                ctx.drawImage(logoImage, 12, 12, 48, 48);
+            }
+            
+            const link = document.createElement('a');
+            link.download = 'badge-72x72.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+</body>
+</html>

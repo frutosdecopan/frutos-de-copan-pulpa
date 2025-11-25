@@ -1,0 +1,37 @@
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archivos temporales
+*.tmp
+*.temp
+
+# Archivos de respaldo
+*.bak
+*.backup
+
+# Archivos de log
+*.log
+
+# Node.js (si aplica)
+node_modules/
+npm-debug.log*
+
+# Archivos sensibles
+.env
+.env.local
+.env.*.local
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos compilados (si aplica)
+dist/
+build/
+
+# Excel que no es necesario para la web
+*.xlsx

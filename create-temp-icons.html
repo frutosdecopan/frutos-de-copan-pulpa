@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Iconos Temporales - Frutos de Copán</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+        }
+        .preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .preview canvas {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            width: 100%;
+        }
+        .info {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍓 Crear Iconos Temporales</h1>
+        <p>Haz clic para generar iconos básicos de prueba</p>
+        
+        <div class="info">
+            <p><strong>Se generarán automáticamente:</strong></p>
+            <p>8 iconos con el logo "FDC" y gradiente púrpura</p>
+        </div>
+        
+        <button class="btn" onclick="generateAndDownloadAll()">
+            ⬇️ Generar y Descargar Todos los Iconos
+        </button>
+        
+        <div class="preview" id="preview"></div>
+        
+        <div id="status" style="margin-top: 20px; color: #667eea; font-weight: bold;"></div>
+    </div>
+
+    <script>
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        
+        function createIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // Gradiente de fondo púrpura
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // Texto "FDC"
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${size * 0.35}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('FDC', size / 2, size / 2);
+            
+            // Emoji de fruta arriba (opcional)
+            if (size >= 144) {
+                ctx.font = `${size * 0.2}px Arial`;
+                ctx.fillText('🍓', size / 2, size * 0.25);
+            }
+            
+            return canvas;
+        }
+        
+        function showPreviews() {
+            const preview = document.getElementById('preview');
+            preview.innerHTML = '';
+            
+            sizes.forEach(size => {
+                const canvas = createIcon(size);
+                const container = document.createElement('div');
+                container.style.textAlign = 'center';
+                
+                const label = document.createElement('p');
+                label.textContent = `${size}x${size}`;
+                label.style.fontSize = '12px';
+                label.style.color = '#666';
+                label.style.marginTop = '5px';
+                
+                container.appendChild(canvas);
+                container.appendChild(label);
+                preview.appendChild(container);
+            });
+        }
+        
+        function downloadIcon(canvas, size) {
+            const link = document.createElement('a');
+            link.download = `icon-${size}x${size}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        function generateAndDownloadAll() {
+            const status = document.getElementById('status');
+            status.textContent = '⏳ Generando iconos...';
+            
+            showPreviews();
+            
+            setTimeout(() => {
+                sizes.forEach((size, index) => {
+                    setTimeout(() => {
+                        const canvas = createIcon(size);
+                        downloadIcon(canvas, size);
+                        
+                        if (index === sizes.length - 1) {
+                            status.textContent = '✅ ¡Todos los iconos descargados! Ahora cópialos a la carpeta /icons/';
+                        }
+                    }, index * 300);
+                });
+            }, 500);
+        }
+        
+        // Mostrar preview al cargar
+        window.onload = showPreviews;
+    </script>
+</body>
+</html>

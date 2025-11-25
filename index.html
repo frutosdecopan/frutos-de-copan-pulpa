@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Frutos de Copán">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PULPA FDC">
+    <title>Sistema de Degustaciones - Frutos de Copán</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="./icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="./icons/icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="./icons/icon-128x128.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="./icons/icon-128x128.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="./icons/icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="./icons/icon-72x72.png">
+    <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX'); // Reemplazar con tu ID de Google Analytics
+    </script>
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* Modern Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+        /* Enhanced Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .animate-slideIn {
+            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .animate-bounceIn {
+            animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        /* Modern Glass Effect */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+
+        .glass-dark {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        /* Enhanced Card Hover */
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .card-hover::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 2px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(102, 126, 234, 0.25);
+        }
+
+        .card-hover:hover::before {
+            opacity: 1;
+        }
+
+        /* Modern Gradient Buttons */
+        .btn-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-gradient::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn-gradient:hover::before {
+            left: 100%;
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-gradient:active {
+            transform: translateY(-1px);
+        }
+
+        /* Modern Tab Styles */
+        .tab-active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.45);
+            transform: translateX(4px);
+        }
+
+        .tab-inactive {
+            color: #6b7280;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tab-inactive:hover {
+            background: rgba(102, 126, 234, 0.15);
+            color: #667eea;
+            transform: translateX(4px);
+        }
+
+        /* Enhanced Chart Container */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 380px;
+            }
+        }
+
+        /* Modern Modal */
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        /* Enhanced Status Badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.813rem;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .status-badge:hover {
+            transform: scale(1.05);
+        }
+
+        .status-active {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #166534;
+        }
+
+        .status-inactive {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+        }
+
+        /* Modern Input Styles */
+        .input-modern {
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .input-modern:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        /* Notification Animation */
+        .notification-enter {
+            animation: slideInRight 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        /* Enhanced Loading Spinner */
+        .loading-spinner {
+            border: 4px solid rgba(102, 126, 234, 0.1);
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* Modern Sidebar */
+        .sidebar-gradient {
+            background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Enhanced Stat Card */
+        .stat-card {
+            background: white;
+            border-radius: 1.25rem;
+            padding: 1.75rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card:hover {
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+            transform: translateY(-6px);
+        }
+
+        /* Modern Table Row */
+        .table-row-hover {
+            transition: all 0.3s ease;
+        }
+
+        .table-row-hover:hover {
+            background: linear-gradient(90deg, #f9fafb 0%, #f3f4f6 100%);
+            transform: scale(1.01);
+        }
+
+        /* Enhanced Dropdown */
+        .assign-dropdown {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .assign-dropdown:hover {
+            border-color: #667eea;
+        }
+
+        /* Modern Search Highlight */
+        .search-highlight {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+        }
+
+        /* Loading Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.6);
+        }
+
+        /* Improved Mobile Styles */
+        @media (max-width: 768px) {
+            .mobile-card {
+                margin-bottom: 1.25rem;
+            }
+
+            .mobile-stack {
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .stat-card {
+                padding: 1.25rem;
+            }
+        }
+
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Pulse Animation for Notifications */
+        .pulse-dot {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* Calendar Day Hover */
+        .calendar-day {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .calendar-day:hover {
+            transform: scale(1.15);
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+        }
+
+        body.dark-mode .glass-effect {
+            background: rgba(20, 20, 35, 0.98);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark-mode .sidebar-gradient {
+            background: linear-gradient(180deg, #1a1a2e 0%, #0f0f23 100%);
+            border-right: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        body.dark-mode .stat-card {
+            background: rgba(30, 30, 46, 0.95);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.1);
+        }
+
+        body.dark-mode .text-gray-800 {
+            color: #f0f0f0 !important;
+        }
+
+        body.dark-mode .text-gray-700 {
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .text-gray-600 {
+            color: #c0c0c0 !important;
+        }
+
+        body.dark-mode .text-gray-500 {
+            color: #a0a0a0 !important;
+        }
+
+        body.dark-mode .bg-white {
+            background-color: rgba(30, 30, 46, 0.95) !important;
+            border: 1px solid rgba(139, 92, 246, 0.2) !important;
+        }
+
+        /* Dark mode - Glass effect cards */
+        body.dark-mode .glass-effect {
+            background: rgba(20, 20, 35, 0.98) !important;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        /* Glass effect - Headings */
+        body.dark-mode .glass-effect h3,
+        body.dark-mode .glass-effect h4 {
+            color: #f0f0f0 !important;
+        }
+
+        /* bg-gray-50 inner boxes in solicitudes */
+        body.dark-mode .bg-gray-50 {
+            background-color: rgba(40, 40, 56, 0.6) !important;
+            border: 1px solid rgba(139, 92, 246, 0.2) !important;
+        }
+
+        body.dark-mode .bg-gray-50 p {
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .bg-gray-50 .text-gray-500 {
+            color: #a0a0a0 !important;
+        }
+
+        body.dark-mode .bg-gray-50 .text-gray-800 {
+            color: #f5f5f5 !important;
+        }
+
+        body.dark-mode .bg-gray-50 .font-medium {
+            color: #f0f0f0 !important;
+        }
+
+        /* Purple boxes for products */
+        body.dark-mode .bg-purple-50 {
+            background-color: rgba(102, 126, 234, 0.15) !important;
+            border: 1px solid rgba(139, 92, 246, 0.3) !important;
+        }
+
+        body.dark-mode .bg-purple-50 .text-purple-800 {
+            color: #c4b5fd !important;
+        }
+
+        body.dark-mode .bg-purple-50 .text-gray-600 {
+            color: #d0d0d0 !important;
+        }
+
+        body.dark-mode .bg-purple-50 .text-purple-600 {
+            color: #a78bfa !important;
+        }
+
+        /* Generic text in glass-effect cards */
+        body.dark-mode .glass-effect .text-gray-800 {
+            color: #f0f0f0 !important;
+        }
+
+        body.dark-mode .glass-effect .text-gray-500 {
+            color: #b0b0b0 !important;
+        }
+
+        body.dark-mode .glass-effect .text-gray-600 {
+            color: #d0d0d0 !important;
+        }
+
+        body.dark-mode [readonly],
+        body.dark-mode [disabled] {
+            background-color: rgba(40, 40, 56, 0.6) !important;
+            color: #d0d0d0 !important;
+        }
+
+        body.dark-mode input,
+        body.dark-mode select,
+        body.dark-mode textarea {
+            background-color: rgba(30, 30, 46, 0.8) !important;
+            color: #f0f0f0 !important;
+            border: 2px solid rgba(139, 92, 246, 0.3) !important;
+        }
+
+        body.dark-mode input::placeholder,
+        body.dark-mode textarea::placeholder {
+            color: #888888 !important;
+        }
+
+        body.dark-mode .table-row-hover:hover {
+            background: rgba(139, 92, 246, 0.15) !important;
+        }
+
+        body.dark-mode thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        }
+
+        body.dark-mode tbody {
+            background: rgba(20, 20, 35, 0.95) !important;
+        }
+
+        body.dark-mode tbody td {
+            color: #e0e0e0 !important;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.2) !important;
+        }
+
+        body.dark-mode .tab-inactive {
+            color: #a0a0a0 !important;
+        }
+
+        body.dark-mode .tab-inactive:hover {
+            background: rgba(139, 92, 246, 0.2) !important;
+            color: #c4b5fd !important;
+        }
+
+        body.dark-mode .input-modern {
+            border: 2px solid rgba(139, 92, 246, 0.3) !important;
+        }
+
+        body.dark-mode .input-modern:focus {
+            border-color: #8b5cf6 !important;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.25) !important;
+        }
+
+        /* Skeleton Loader */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 0.5rem;
+        }
+
+        body.dark-mode .skeleton {
+            background: linear-gradient(90deg, #2a2a3e 25%, #1a1a2e 50%, #2a2a3e 75%);
+            background-size: 200% 100%;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-8px);
+            padding: 0.5rem 1rem;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            font-size: 0.75rem;
+            border-radius: 0.5rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip:hover::before {
+            opacity: 1;
+        }
+
+        /* Improved Responsive Tables */
+        @media (max-width: 768px) {
+            table {
+                font-size: 0.875rem;
+            }
+            
+            th, td {
+                padding: 0.75rem 0.5rem !important;
+            }
+            
+            /* Mejor espaciado en móvil */
+            .glass-effect {
+                padding: 1rem !important;
+            }
+            
+            /* Botones más grandes para touch */
+            button, .btn-gradient, input[type="submit"] {
+                min-height: 44px;
+                padding: 0.75rem 1rem !important;
+                font-size: 1rem;
+            }
+            
+            /* Cards más compactas en móvil */
+            .card-hover {
+                padding: 1rem !important;
+            }
+            
+            /* Formularios optimizados */
+            input, select, textarea {
+                font-size: 16px !important; /* Evita zoom en iOS */
+                min-height: 44px;
+            }
+            
+            /* Modal full screen en móvil */
+            .modal-overlay > div {
+                max-width: 100% !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+                max-height: 100vh;
+                overflow-y: auto;
+            }
+        }
+        
+        /* Mejoras para pantallas muy pequeñas */
+        @media (max-width: 480px) {
+            h1, h2 {
+                font-size: 1.5rem !important;
+            }
+            
+            h3, h4 {
+                font-size: 1.25rem !important;
+            }
+            
+            .stat-card {
+                padding: 1rem !important;
+            }
+        }
+
+        /* PWA Install Button */
+        .pwa-install {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        /* Connection Status Indicator */
+        .connection-status {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+        }
+
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="overflow-hidden">
+    <!-- Enhanced Loading Screen -->
+    <div id="loadingScreen" class="fixed inset-0 bg-gradient-to-br from-purple-50 to-indigo-50 flex items-center justify-center z-50">
+        <div class="flex flex-col items-center animate-bounceIn">
+            <div class="loading-spinner mb-6"></div>
+            <div class="text-center">
+                <p class="text-xl font-bold gradient-text mb-2">Frutos de Copán</p>
+                <p class="text-sm text-gray-500">Cargando sistema...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex h-screen overflow-hidden">
+        <!-- Enhanced Sidebar -->
+        <aside id="sidebar" class="sidebar-gradient transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out w-64 flex flex-col fixed h-full z-40 md:relative">
+            <button id="closeSidebarBtn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 md:hidden transition-all hover:rotate-90">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            
+            <div class="p-6">
+                <!-- Modern Logo -->
+                <div class="flex items-center space-x-3 mb-8 animate-slideIn">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-800">Frutos de Copán</h1>
+                        <p class="text-xs text-gray-500 font-medium">Sistema de Gestión</p>
+                    </div>
+                </div>
+
+                <!-- Modern Navigation -->
+                <nav class="space-y-2">
+                    <a href="#" id="solicitudesTab" class="flex items-center space-x-3 p-3 rounded-xl font-medium transition-all tab-active tooltip" data-tooltip="Ver mis solicitudes">
+                        <i class="fas fa-clipboard-list w-5 text-lg"></i>
+                        <span>Mis Solicitudes</span>
+                    </a>
+                    <a href="#" id="dashboardTab" class="flex items-center space-x-3 p-3 rounded-xl font-medium transition-all tab-inactive admin-only hidden tooltip" data-tooltip="Ver estadísticas">
+                        <i class="fas fa-chart-line w-5 text-lg"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" id="reportesTab" class="flex items-center space-x-3 p-3 rounded-xl font-medium transition-all tab-inactive admin-only hidden tooltip" data-tooltip="Generar reportes">
+                        <i class="fas fa-file-invoice w-5 text-lg"></i>
+                        <span>Reportes</span>
+                    </a>
+                    <a href="#" id="produccionTab" class="flex items-center space-x-3 p-3 rounded-xl font-medium transition-all tab-inactive produccion-only hidden tooltip" data-tooltip="Pedidos de producción">
+                        <i class="fas fa-industry w-5 text-lg"></i>
+                        <span>Producción</span>
+                    </a>
+                    <a href="#" id="disponibilidadTab" class="flex items-center space-x-3 p-3 rounded-xl font-medium transition-all tab-inactive admin-only hidden tooltip" data-tooltip="Gestionar disponibilidad">
+                        <i class="fas fa-calendar-check w-5 text-lg"></i>
+                        <span>Disponibilidad</span>
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Enhanced User Section -->
+            <div class="mt-auto p-6 border-t border-gray-200">
+                <!-- Botón Instalar App (Visible para todos) -->
+                <button id="installAppBtn" class="w-full flex items-center justify-center space-x-2 p-3 rounded-xl font-semibold transition-all bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg mb-3">
+                    <i class="fas fa-download text-lg"></i>
+                    <span>Instalar App</span>
+                </button>
+                
+                <div id="userNameDisplay" class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 mb-3 hidden">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p id="userNameText" class="font-semibold text-gray-800 text-sm"></p>
+                            <p class="text-xs text-gray-500">Usuario activo</p>
+                        </div>
+                    </div>
+                </div>
+                <button id="loginButton" class="w-full btn-gradient text-white font-semibold py-3.5 rounded-xl shadow-lg">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión
+                </button>
+                <button id="signOutButton" class="w-full bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold py-3.5 rounded-xl hover:from-red-600 hover:to-red-700 transition-all shadow-lg hidden mt-2">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
+                </button>
+            </div>
+        </aside>
+
+        <!-- Backdrop -->
+        <div id="backdrop" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden transition-opacity"></div>
+
+        <!-- Main Content -->
+        <div id="app" class="flex-1 flex flex-col overflow-hidden hidden">
+            <!-- Enhanced Header -->
+            <header class="glass-effect p-4 md:p-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <button id="menuBtn" class="md:hidden p-2.5 rounded-xl hover:bg-gray-100 transition-all">
+                            <i class="fas fa-bars text-2xl text-gray-700"></i>
+                        </button>
+                        <div>
+                            <h1 class="text-2xl md:text-3xl font-bold gradient-text">
+                                PULPA
+                            </h1>
+                            <p class="text-sm text-gray-500 hidden md:block font-medium">Plataforma Unificada de Logística y Pedidos Administrativos</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="hidden md:flex items-center space-x-3 bg-white px-5 py-3 rounded-xl shadow-md">
+                            <i class="fas fa-clock text-purple-600 text-lg"></i>
+                            <span id="currentTime" class="text-sm font-semibold text-gray-700"></span>
+                        </div>
+                        <!-- Dark Mode Toggle -->
+                        <button onclick="toggleDarkMode()" class="p-3 rounded-xl bg-white hover:bg-gray-100 transition-all shadow-md" title="Alternar modo oscuro">
+                            <i class="fas fa-moon text-purple-600"></i>
+                        </button>
+                        <!-- Refresh Button -->
+                        <button onclick="refreshData()" class="p-3 rounded-xl bg-white hover:bg-gray-100 transition-all shadow-md" title="Actualizar datos">
+                            <i class="fas fa-sync-alt text-purple-600"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main class="flex-1 overflow-y-auto p-4 md:p-6">
+                <!-- Solicitudes View -->
+                <section id="solicitudesView" class="view-content animate-fadeIn">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                        <div>
+                            <h2 class="text-3xl font-bold text-white mb-2">Mis Solicitudes</h2>
+                            <p class="text-purple-100 font-medium">Gestiona tus pedidos activos</p>
+                        </div>
+                        <button id="addSolicitudBtn" class="btn-gradient text-white py-3.5 px-8 rounded-xl font-semibold shadow-2xl w-full md:w-auto">
+                            <i class="fas fa-plus-circle mr-2"></i>Nueva Solicitud
+                        </button>
+                    </div>
+                    
+                    <!-- Filtros Móviles -->
+                    <div class="glass-effect rounded-2xl p-4 md:p-6 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-filter mr-1"></i>Estado
+                                </label>
+                                <select id="solicitudesEstadoFilter" class="input-modern w-full p-3 rounded-xl">
+                                    <option value="all">Todas</option>
+                                    <option value="active">Activas</option>
+                                    <option value="finalized">Finalizadas</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-store mr-1"></i>Destino
+                                </label>
+                                <input type="text" id="solicitudesDestinoFilter" placeholder="Buscar por destino..." class="input-modern w-full p-3 rounded-xl">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-calendar mr-1"></i>Fecha
+                                </label>
+                                <input type="date" id="solicitudesFechaFilter" class="input-modern w-full p-3 rounded-xl">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="solicitudesList" class="space-y-4"></div>
+                </section>
+
+                <!-- Dashboard View -->
+                <section id="dashboardView" class="view-content hidden">
+                    <div class="mb-6">
+                        <h2 class="text-3xl font-bold text-white mb-2">Dashboard</h2>
+                        <p class="text-purple-100 font-medium">Análisis y estadísticas del sistema</p>
+                    </div>
+                    
+                    <!-- Enhanced Stats Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="stat-card">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-lg">
+                                    <i class="fas fa-clipboard-list text-2xl"></i>
+                                </div>
+                                <span class="text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Total</span>
+                            </div>
+                            <p class="text-gray-500 text-sm font-medium mb-1">Total Solicitudes</p>
+                            <p id="totalSolicitudes" class="text-4xl font-bold text-gray-800">0</p>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white shadow-lg">
+                                    <i class="fas fa-check-circle text-2xl"></i>
+                                </div>
+                                <span class="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">Activas</span>
+                            </div>
+                            <p class="text-gray-500 text-sm font-medium mb-1">Solicitudes Activas</p>
+                            <p id="solicitudesActivas" class="text-4xl font-bold text-gray-800">0</p>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white shadow-lg">
+                                    <i class="fas fa-flag-checkered text-2xl"></i>
+                                </div>
+                                <span class="text-sm font-semibold text-purple-600 bg-purple-50 px-3 py-1 rounded-full">Completadas</span>
+                            </div>
+                            <p class="text-gray-500 text-sm font-medium mb-1">Solicitudes Finalizadas</p>
+                            <p id="solicitudesFinalizadas" class="text-4xl font-bold text-gray-800">0</p>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white shadow-lg">
+                                    <i class="fas fa-box text-2xl"></i>
+                                </div>
+                                <span class="text-sm font-semibold text-orange-600 bg-orange-50 px-3 py-1 rounded-full">Productos</span>
+                            </div>
+                            <p class="text-gray-500 text-sm font-medium mb-1">Productos Activos</p>
+                            <p id="totalProductosActivos" class="text-4xl font-bold text-gray-800">0</p>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Charts Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="glass-effect rounded-2xl p-6 card-hover">
+                            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-chart-bar mr-2 text-purple-600"></i>
+                                Top 10 Productos Solicitados
+                            </h3>
+                            <div class="chart-container">
+                                <canvas id="topProductsChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="glass-effect rounded-2xl p-6 card-hover">
+                            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-map-marker-alt mr-2 text-purple-600"></i>
+                                Solicitudes por Ubicación
+                            </h3>
+                            <div class="chart-container">
+                                <canvas id="locationChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="glass-effect rounded-2xl p-6 card-hover">
+                            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-tags mr-2 text-purple-600"></i>
+                                Distribución por Tipo
+                            </h3>
+                            <div class="chart-container">
+                                <canvas id="typeChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="glass-effect rounded-2xl p-6 card-hover">
+                            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-chart-line mr-2 text-purple-600"></i>
+                                Tendencia Mensual
+                            </h3>
+                            <div class="chart-container">
+                                <canvas id="trendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Reportes View -->
+                <section id="reportesView" class="view-content hidden">
+                    <div class="mb-6">
+                        <h2 class="text-3xl font-bold text-white mb-2">Reportes</h2>
+                        <p class="text-purple-100 font-medium">Gestión y análisis de solicitudes</p>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-6 mb-6">
+                        <div class="flex flex-col md:flex-row gap-4 items-end">
+                            <div class="flex-1">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-filter mr-1"></i>Filtrar por Estado
+                                </label>
+                                <select id="reportFilter" class="input-modern w-full p-3 rounded-xl">
+                                    <option value="all">Todas</option>
+                                    <option value="active">Activas</option>
+                                    <option value="finalized">Finalizadas</option>
+                                </select>
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-search mr-1"></i>Buscar
+                                </label>
+                                <input type="text" id="searchInput" placeholder="ID, Usuario o Ubicación..." class="input-modern w-full p-3 rounded-xl">
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="exportToCSV()" class="btn-gradient text-white font-semibold py-3 px-6 rounded-xl shadow-lg whitespace-nowrap tooltip" data-tooltip="Exportar a CSV">
+                                    <i class="fas fa-file-csv mr-2"></i>CSV
+                                </button>
+                                <button onclick="exportToPDF()" class="bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg whitespace-nowrap hover:from-red-600 hover:to-red-700 transition-all tooltip" data-tooltip="Exportar a PDF">
+                                    <i class="fas fa-file-pdf mr-2"></i>PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-effect rounded-2xl overflow-hidden shadow-xl">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-sm font-bold">ID</th>
+                                        <th class="px-6 py-4 text-left text-sm font-bold">Fecha</th>
+                                        <th class="px-6 py-4 text-left text-sm font-bold">Usuario</th>
+                                        <th class="px-6 py-4 text-left text-sm font-bold">Ubicación</th>
+                                        <th class="px-6 py-4 text-left text-sm font-bold hidden lg:table-cell">Tipo</th>
+                                        <th class="px-6 py-4 text-left text-sm font-bold hidden xl:table-cell">Destino</th>
+                                        <th class="px-6 py-4 text-left text-sm font-bold">Productos</th>
+                                        <th class="px-6 py-4 text-left text-sm font-bold">Estado</th>
+                                        <th class="px-6 py-4 text-left text-sm font-bold">Responsable</th>
+                                        <th class="px-6 py-4 text-center text-sm font-bold">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reportTableBody" class="bg-white divide-y divide-gray-200">
+                                    <!-- Table rows will be inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Producción View -->
+                <section id="produccionView" class="view-content hidden">
+                    <div class="mb-6">
+                        <h2 class="text-3xl font-bold text-white mb-2">Producción</h2>
+                        <p class="text-purple-100 font-medium">Gestión de pedidos de producción</p>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-6 mb-6">
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-filter mr-1"></i>Filtrar por Estado
+                                </label>
+                                <select id="produccionFilter" class="input-modern w-full p-3 rounded-xl">
+                                    <option value="all">Todas</option>
+                                    <option value="active">Activas</option>
+                                    <option value="finalized">Finalizadas</option>
+                                </select>
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-user mr-1"></i>Filtrar por Usuario
+                                </label>
+                                <select id="produccionUserFilter" class="input-modern w-full p-3 rounded-xl">
+                                    <option value="all">Todos los usuarios</option>
+                                    <!-- Options will be populated dynamically -->
+                                </select>
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-search mr-1"></i>Buscar
+                                </label>
+                                <input type="text" id="produccionSearchInput" placeholder="ID, Usuario, Ubicación o Destino..." class="input-modern w-full p-3 rounded-xl">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-effect rounded-2xl overflow-hidden shadow-xl">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-sm font-bold">ID</th>
+                                        <th class="px-6 py-4 text-left text-sm font-bold">Fecha</th>
+                                        <th class="px-6 py-4 text-left text-sm font-bold">Usuario</th>
+                                        <th class="px-6 py-4 text-left text-sm font-bold">Ubicación</th>
+                                        <th class="px-6 py-4 text-left text-sm font-bold">Destino</th>
+                                        <th class="px-6 py-4 text-left text-sm font-bold">Productos</th>
+                                        <th class="px-6 py-4 text-left text-sm font-bold">Estado</th>
+                                        <th class="px-6 py-4 text-center text-sm font-bold">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="produccionTableBody" class="bg-white divide-y divide-gray-200">
+                                    <!-- Table rows will be inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Disponibilidad View -->
+                <section id="disponibilidadView" class="view-content hidden">
+                    <div class="mb-6">
+                        <h2 class="text-3xl font-bold text-white mb-2">Disponibilidad</h2>
+                        <p class="text-purple-100 font-medium">Gestiona la disponibilidad de los responsables</p>
+                    </div>
+
+                    <div class="glass-effect rounded-2xl p-8">
+                        <div class="mb-6">
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                <i class="fas fa-user-tie mr-2"></i>Seleccionar Responsable
+                            </label>
+                            <select id="disponibilidadUserSelect" class="input-modern w-full md:w-1/2 p-3 rounded-xl"></select>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <button id="prevMonthBtn" class="p-3 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 text-white hover:from-purple-600 hover:to-indigo-700 transition-all shadow-md">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <h3 id="currentMonthYear" class="text-2xl font-bold gradient-text"></h3>
+                                <button id="nextMonthBtn" class="p-3 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 text-white hover:from-purple-600 hover:to-indigo-700 transition-all shadow-md">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <div id="calendar" class="grid grid-cols-7 gap-2"></div>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row gap-4 items-center">
+                            <button id="saveDisponibilidadBtn" class="btn-gradient text-white font-semibold py-3.5 px-8 rounded-xl shadow-xl w-full md:w-auto">
+                                <i class="fas fa-save mr-2"></i>Guardar Disponibilidad
+                            </button>
+                            <div class="flex items-center gap-6 text-sm">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-6 h-6 rounded-lg bg-white border-2 border-gray-300"></div>
+                                    <span class="text-gray-700 font-medium">Disponible</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-red-500 to-red-600"></div>
+                                    <span class="text-gray-700 font-medium">No Disponible</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Enhanced Login Modal -->
+    <div id="loginModal" class="fixed inset-0 modal-overlay flex items-center justify-center p-4 z-50 hidden">
+        <div class="glass-effect rounded-3xl p-8 md:p-10 w-full max-w-md shadow-2xl animate-bounceIn">
+            <button id="closeLoginModalBtn" class="absolute top-6 right-6 text-gray-400 hover:text-gray-700 transition-all hover:rotate-90">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 mx-auto mb-4 rounded-3xl bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-2xl">
+                    <i class="fas fa-leaf text-3xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold gradient-text mb-2">Bienvenido</h2>
+                <p class="text-gray-500 font-medium">Ingresa tus credenciales</p>
+            </div>
+
+            <form id="loginForm" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-envelope mr-2"></i>Correo Electrónico
+                    </label>
+                    <input type="email" id="emailInput" required class="input-modern w-full p-4 rounded-xl" placeholder="usuario@ejemplo.com">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-lock mr-2"></i>Contraseña
+                    </label>
+                    <input type="password" id="passwordInput" required class="input-modern w-full p-4 rounded-xl" placeholder="••••••••">
+                </div>
+
+                <p id="loginMessage" class="text-red-500 text-sm font-medium"></p>
+
+                <button type="submit" class="w-full btn-gradient text-white font-bold py-4 rounded-xl shadow-xl text-lg">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Ingresar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Enhanced Solicitud Modal -->
+    <div id="solicitudModal" class="fixed inset-0 modal-overlay flex items-center justify-center p-4 z-50 hidden overflow-y-auto">
+        <div class="glass-effect rounded-3xl p-8 w-full max-w-4xl shadow-2xl my-8 animate-bounceIn">
+            <button id="closeModalBtn" class="absolute top-6 right-6 text-gray-400 hover:text-gray-700 transition-all hover:rotate-90">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            
+            <div class="mb-6">
+                <h2 id="modalTitle" class="text-3xl font-bold gradient-text mb-2">Nueva Solicitud</h2>
+                <p class="text-gray-500 font-medium">Completa los datos de tu solicitud</p>
+            </div>
+
+            <form id="solicitudForm" class="space-y-6">
+                <input type="hidden" id="editSolicitudId">
+                <input type="hidden" id="solicitudUser">
+                <input type="hidden" id="solicitudEmail">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-calendar mr-2"></i>Fecha
+                        </label>
+                        <input type="date" id="solicitudDate" required class="input-modern w-full p-3 rounded-xl">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-tag mr-2"></i>Tipo
+                        </label>
+                        <select id="solicitudType" required class="input-modern w-full p-3 rounded-xl">
+                            <option value="">Seleccionar...</option>
+                            <option value="Cambio">Cambio</option>
+                            <option value="Promocion">Promoción</option>
+                            <option value="Muestras">Muestras</option>
+                            <option value="Donacion">Donación</option>
+                            <option value="Pedidos">Pedidos</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-map-marker-alt mr-2"></i>Ubicación
+                        </label>
+                        <select id="solicitudLocation" required class="input-modern w-full p-3 rounded-xl">
+                            <option value="">Seleccionar...</option>
+                            <option value="San Pedro Sula">San Pedro Sula</option>
+                            <option value="Tegucigalpa">Tegucigalpa</option>
+                            <option value="Puerto Cortes">Puerto Cortes</option>
+                            <option value="Copan">Copán</option>
+                            <option value="La Ceiba">La Ceiba</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-store mr-2"></i>Destino
+                        </label>
+                        <input type="text" id="solicitudComments" class="input-modern w-full p-3 rounded-xl" placeholder="Nombre del lugar o destino">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-4">
+                        <i class="fas fa-box mr-2"></i>Productos (Selecciona las cantidades)
+                    </label>
+                    <div id="productosContainer" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <!-- Products will be inserted here -->
+                    </div>
+                </div>
+
+                <div class="flex gap-4 pt-4">
+                    <button type="button" id="cancelFormBtn" class="flex-1 bg-gray-200 text-gray-700 font-semibold py-3.5 rounded-xl hover:bg-gray-300 transition-all">
+                        <i class="fas fa-times mr-2"></i>Cancelar
+                    </button>
+                    <button type="submit" class="flex-1 btn-gradient text-white font-semibold py-3.5 rounded-xl shadow-xl">
+                        <i class="fas fa-paper-plane mr-2"></i><span id="submitBtnText">Enviar Solicitud</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Enhanced Detail Modal -->
+    <div id="detailModal" class="fixed inset-0 modal-overlay flex items-center justify-center p-4 z-50 hidden overflow-y-auto">
+        <div class="glass-effect rounded-3xl p-8 w-full max-w-3xl shadow-2xl my-8 animate-bounceIn">
+            <button id="closeDetailModalBtn" class="absolute top-6 right-6 text-gray-400 hover:text-gray-700 transition-all hover:rotate-90">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            
+            <div id="detailModalContent"></div>
+        </div>
+    </div>
+
+    <!-- Enhanced Notification Container -->
+    <div id="notificationContainer" class="fixed top-6 right-6 z-50 space-y-3 max-w-sm"></div>
+
+    <script src="app.js"></script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registered:', registration.scope);
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed:', err);
+                    });
+            });
+        }
+
+        // PWA Install Prompt - CORREGIDO Y OPTIMIZADO
+        let deferredPrompt; // Variable para almacenar el evento de instalación
+        const installBtn = document.getElementById('installAppBtn');
+        
+        // Detectar si es móvil o escritorio
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        // 1. Ocultar el botón por defecto (se mostrará solo si la PWA es instalable)
+        if (installBtn) {
+            installBtn.style.display = 'none';
+        }
+        
+        // 2. Capturar el evento 'beforeinstallprompt'
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevenir que el navegador muestre su propio prompt inmediatamente
+            e.preventDefault();
+            
+            // Guardar el evento para usarlo después
+            deferredPrompt = e;
+            
+            // Mostrar el botón 'Instalar App'
+            if (installBtn) {
+                installBtn.style.display = 'flex';
+                console.log('Botón de instalación mostrado');
+            }
+        });
+        
+        // 3. Añadir el listener de click al botón 'Instalar App'
+        if (installBtn) {
+            installBtn.addEventListener('click', async () => {
+                if (!deferredPrompt) {
+                    // Si no hay prompt nativo, mostrar instrucciones
+                    showInstallInstructions();
+                    return;
+                }
+                
+                // Mostrar el prompt de instalación guardado al usuario
+                deferredPrompt.prompt();
+                
+                // Esperar a que el usuario responda al prompt
+                const { outcome } = await deferredPrompt.userChoice;
+                
+                // Registrar la elección del usuario
+                console.log(`El usuario eligió ${outcome}`);
+                
+                if (outcome === 'accepted') {
+                    console.log('Usuario aceptó instalar la PWA');
+                    showNotification('✅ App instalada exitosamente en tu ' + (isMobile ? 'celular' : 'PC'), 'success');
+                    // Ocultar botón después de instalar
+                    installBtn.style.display = 'none';
+                } else {
+                    console.log('Usuario rechazó la instalación');
+                }
+                
+                // Resetear la variable (el prompt solo se puede usar una vez)
+                deferredPrompt = null;
+            });
+        }
+        
+        // 4. Ocultar el botón si la app ya está instalada
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA instalada exitosamente');
+            showNotification('🎉 App instalada correctamente en tu ' + (isMobile ? 'celular' : 'PC'), 'success');
+            if (installBtn) {
+                installBtn.style.display = 'none';
+            }
+        });
+        
+        // Función para mostrar instrucciones de instalación
+        function showInstallInstructions() {
+            const message = isMobile 
+                ? '📱 Para instalar en tu celular:\n\n' +
+                  'Chrome/Edge: Toca el menú (⋮) → "Agregar a pantalla de inicio"\n' +
+                  'Safari (iOS): Toca 🔗 → "Agregar a pantalla de inicio"'
+                : '💻 Para instalar en tu PC:\n\n' +
+                  'Chrome/Edge: Clic en el ícono de instalar (⊕) en la barra de direcciones\n' +
+                  'O presiona Ctrl+Shift+A (Windows) / Cmd+Shift+A (Mac)';
+            
+            if (confirm(message)) {
+                console.log('Instrucciones mostradas al usuario');
+            }
+        }
+
+        // Helper para notificaciones
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification-enter p-4 rounded-xl shadow-lg text-white font-semibold ${
+                type === 'success' ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-blue-500 to-blue-600'
+            }`;
+            notification.textContent = message;
+            
+            const container = document.getElementById('notificationContainer');
+            if (container) {
+                container.appendChild(notification);
+                setTimeout(() => notification.remove(), 5000);
+            }
+        }
+
+        // Initialize dark mode on load
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+</body>
+</html>

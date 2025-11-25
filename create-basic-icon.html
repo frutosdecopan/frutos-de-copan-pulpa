@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crear Icono Básico</title>
+</head>
+<body>
+    <canvas id="canvas" width="192" height="192" style="display:none;"></canvas>
+    <script>
+        // Crear icono básico de Frutos de Copán
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Gradiente púrpura de la marca
+        const gradient = ctx.createLinearGradient(0, 0, 192, 192);
+        gradient.addColorStop(0, '#667eea');
+        gradient.addColorStop(1, '#764ba2');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 192, 192);
+        
+        // Dibujar texto "FDC" en blanco
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 60px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('FDC', 96, 96);
+        
+        // Dibujar una hoja simple (emoji de hoja)
+        ctx.font = '40px Arial';
+        ctx.fillText('🌿', 96, 50);
+        
+        // Convertir a imagen y descargar
+        const link = document.createElement('a');
+        link.download = 'icon-192x192.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+        // También crear versión más pequeña
+        setTimeout(() => {
+            const canvas72 = document.createElement('canvas');
+            canvas72.width = 72;
+            canvas72.height = 72;
+            const ctx72 = canvas72.getContext('2d');
+            
+            // Mismo gradiente
+            const gradient72 = ctx72.createLinearGradient(0, 0, 72, 72);
+            gradient72.addColorStop(0, '#667eea');
+            gradient72.addColorStop(1, '#764ba2');
+            ctx72.fillStyle = gradient72;
+            ctx72.fillRect(0, 0, 72, 72);
+            
+            // Texto más pequeño
+            ctx72.fillStyle = 'white';
+            ctx72.font = 'bold 25px Arial';
+            ctx72.textAlign = 'center';
+            ctx72.textBaseline = 'middle';
+            ctx72.fillText('FDC', 36, 36);
+            
+            // Hoja más pequeña
+            ctx72.font = '15px Arial';
+            ctx72.fillText('🌿', 36, 20);
+            
+            const link72 = document.createElement('a');
+            link72.download = 'icon-72x72.png';
+            link72.href = canvas72.toDataURL('image/png');
+            link72.click();
+        }, 1000);
+        
+        // Mensaje de confirmación
+        setTimeout(() => {
+            alert('Iconos creados: icon-192x192.png e icon-72x72.png - Revísalos en tu carpeta de Descargas');
+        }, 2000);
+    </script>
+</body>
+</html>
